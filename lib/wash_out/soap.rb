@@ -27,10 +27,11 @@ module WashOut
 
         default_response_tag = soap_config.camelize_wsdl ? 'Response' : '_response'
         default_response_tag = action+default_response_tag
+        default_response_tag = "#{action}ResponseElem"
 
         self.soap_actions[action] = options.merge(
           :in           => WashOut::Param.parse_def(soap_config, options[:args]),
-          :request_tag  => options[:as] || action,
+          :request_tag  => options[:as] ||  "#{action}RequestElem",#wsdl_operation_request_element_name(), #action,
           :out          => WashOut::Param.parse_def(soap_config, options[:return]),
           :to           => options[:to] || action,
           :response_tag => options[:response_tag] || default_response_tag

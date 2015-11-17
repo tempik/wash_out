@@ -80,6 +80,8 @@ module WashOut
       return [200, {}, ['OK']] if soap_action.blank?
 
       soap_parameters = parse_soap_parameters(env)
+      Log.s :soap_parameters
+      Log.w soap_parameters
 
       action_spec = controller.soap_actions[soap_action]
 

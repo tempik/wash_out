@@ -9,12 +9,14 @@ xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
                 'targetNamespace' => @namespace do
 
   xml.types do
-    xml.tag! "schema", :targetNamespace => @namespace, :xmlns => 'http://www.w3.org/2001/XMLSchema' do
+    xml.tag! "xsd:schema", :targetNamespace => @namespace do
       defined = []
       @map.each do |operation, formats|
         (formats[:in] + formats[:out]).each do |p|
           wsdl_type xml, p, defined
         end
+         wsdl_message_element wsdl_operation_request_element_name(operation), formats[:in], xml, p, defined
+         wsdl_message_element wsdl_operation_response_element_name(operation), formats[:out], xml, p, defined
       end
     end
   end
@@ -32,16 +34,14 @@ xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
     xml.tag! "soap:binding", :style => 'document', :transport => 'http://schemas.xmlsoap.org/soap/http'
     @map.keys.each do |operation|
       xml.operation :name => operation do
-        xml.tag! "soap:operation", :soapAction => operation
+        xml.tag! "soap:operation", :soapAction => operation, :style => :document
         xml.input do
           xml.tag! "soap:body",
-            :use => "literal",
-            :namespace => @namespace
+            :use => "literal"#,:namespace => @namespace
         end
         xml.output do
           xml.tag! "soap:body",
-            :use => "literal",
-            :namespace => @namespace
+            :use => "literal"#,:namespace => @namespace
         end
       end
     end
@@ -56,12 +56,12 @@ xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
   @map.each do |operation, formats|
     xml.message :name => "#{operation}" do
       formats[:in].each do |p|
-        xml.part wsdl_occurence(p, false, :name => p.name, :type => p.namespaced_type)
+        xml.part wsdl_occurence(p, false, :name => p.name, :element => "tns:#{wsdl_operation_request_element_name(operation)}")
       end
     end
     xml.message :name => formats[:response_tag] do
       formats[:out].each do |p|
-        xml.part wsdl_occurence(p, false, :name => p.name, :type => p.namespaced_type)
+        xml.part wsdl_occurence(p, false, :name => p.name, :element => "tns:#{wsdl_operation_response_element_name(operation)}")
       end
     end
   end
