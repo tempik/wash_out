@@ -12,6 +12,8 @@ xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
     xml.tag! "xsd:schema", :targetNamespace => @namespace do
       defined = []
       @map.each do |operation, formats|
+        next unless operation_allowed? operation #t
+
         (formats[:in] + formats[:out]).each do |p|
           wsdl_type xml, p, defined
         end
@@ -23,6 +25,7 @@ xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
 
   xml.portType :name => "#{@name}_port" do
     @map.each do |operation, formats|
+      next unless operation_allowed? operation #t
       xml.operation :name => operation do
         xml.input :message => "tns:#{operation}"
         xml.output :message => "tns:#{formats[:response_tag]}"
@@ -33,6 +36,7 @@ xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
   xml.binding :name => "#{@name}_binding", :type => "tns:#{@name}_port" do
     xml.tag! "soap:binding", :style => 'document', :transport => 'http://schemas.xmlsoap.org/soap/http'
     @map.keys.each do |operation|
+      next unless operation_allowed? operation #t
       xml.operation :name => operation do
         xml.tag! "soap:operation", :soapAction => operation, :style => :document
         xml.input do
@@ -54,6 +58,7 @@ xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
   end
 
   @map.each do |operation, formats|
+    next unless operation_allowed? operation #t
     xml.message :name => "#{operation}" do
       formats[:in].each do |p|
         xml.part wsdl_occurence(p, false, :name => p.name, :element => "tns:#{wsdl_operation_request_element_name(operation)}")

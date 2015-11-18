@@ -32,8 +32,6 @@ module WashOut
     end
 
     def _map_soap_parameters
-      #Log.s :xml_data
-      #Log.w xml_data
       @_params = _load_params action_spec[:in],
         _strip_empty_nodes(action_spec[:in], xml_data)
     end

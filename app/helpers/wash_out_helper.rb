@@ -1,5 +1,9 @@
 module WashOutHelper
 
+  def operation_allowed? operation
+    @free || (@available_fields.key?(operation[3..-1].singularize.underscore.to_sym)) #t
+  end
+
   def wsdl_data_options(param)
     if controller.soap_config.wsdl_style.class.name =='Symbol'
       controller.soap_config.wsdl_style = controller.soap_config.wsdl_style.to_str
@@ -41,15 +45,17 @@ module WashOutHelper
   def wsdl_data(xml, params)
 
     params.each do |param|
+      #next unless @free || param.name == 'value' || @available_fields[@operation[3..-1].singularize.underscore.to_sym].include?(param.name.underscore.to_sym) #t
       next if param.attribute?
       tag_name = param.name
+
       param_options = wsdl_data_options(param)
       param_options.merge! wsdl_data_attrs(param)
       tag_name= "tns:#{tag_name}"
       if param.struct?
-
         if param.multiplied
           param.map.each do |p|
+
             attrs = wsdl_data_attrs p
             if p.is_a?(Array) || p.map.size > attrs.size
               blk = proc { wsdl_data(xml, p.map) }
@@ -104,6 +110,7 @@ module WashOutHelper
 
 
   def wsdl_type(xml, param, defined=[])
+    return false unless @free || (@available_fields.key?(param.basic_type.to_sym)) #t
     more = []
     schema_namespace = 'xsd' 
 
@@ -112,6 +119,7 @@ module WashOutHelper
           xml.tag! "#{schema_namespace}:complexType", :name => param.basic_type do
             attrs, elems = [], []
             param.map.each do |value|
+              next unless @free ||  @available_fields[param.basic_type.to_sym].include?(value.name.underscore.to_sym) #t
               more << value if value.struct?
               if value.attribute?
                 attrs << value

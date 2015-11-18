@@ -50,4 +50,16 @@ ActionController::Base.class_eval do
     include WashOut::SOAP
     self.soap_config = options
   end
+
+  # для того чтобы динамически отдавать нужные поля и модели
+  # используется в хелпере и вьюхах
+  before_action do
+    if self.respond_to?(:available_fields)
+      @available_fields = available_fields
+    else
+      @free = true
+    end
+  end
+
+
 end
